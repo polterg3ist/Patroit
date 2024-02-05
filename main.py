@@ -44,8 +44,8 @@ def translate_line(line):
             returned_from_command = COMMANDS[operand](operands[ind + 1:])
             return returned_from_command
 
-        if operand.startswith('"') or operand.startswith("'"):
-            text_start, text_end = ind, 
+        #if operand.startswith('"') or operand.startswith("'"):
+        #    text_start, text_end = ind,
 
 
 if file_extension != '.prt':
