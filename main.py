@@ -1,30 +1,31 @@
 import sys
 import os
+import re
 
 file = sys.argv[1]
 _, file_extension = os.path.splitext(file)
 
 
-class MissingQuoteException(Exception):
+class SyntaxException(Exception):
     def __init__(self, message):
         self.message = message
 
 
 def say_command(line_data):
-    line_data = " ".join(line_data)
-    if line_data[0] == "'" and line_data[-1] == "'" or line_data[0] == '"' and line_data[-1] == '"':
-        return print(line_data[1:-1])
-    else:
-        return print(translate_line(line_data))
+    # TODO: Replace this with something better. RegExp below can be used.
+    # exp = 'сказать "Привет", "Как дела"'
+    # pattern = r'"(.*?)"'
+    # res = re.findall(pattern, exp)
+    #
+    func_args = line_data.split(', ')
+    rendered_text = ""
+    for arg in func_args:
+        rendered_text += translate_line(arg) + ' '
+    return print(rendered_text)
 
 
 def input_command(line_data):
-    line_data = " ".join(line_data)
-    if line_data[0] == "'" and line_data[-1] == "'" or line_data[0] == '"' and line_data[-1] == '"':
-        user_input = input(line_data[1:-1])
-        return user_input
-    else:
-        return print(translate_line(line_data))
+    return input(translate_line(line_data))
 
 
 COMMANDS = {'сказать': say_command, 'ввести': input_command}
@@ -38,14 +39,25 @@ def translate(file):
 
 
 def translate_line(line):
-    operands = line.split()
-    for ind, operand in enumerate(operands):
-        if operand in COMMANDS:
-            returned_from_command = COMMANDS[operand](operands[ind + 1:])
-            return returned_from_command
+    split_line = line.split(' ', 1)
+    cmnd = split_line[0]
+    other = split_line[1] if len(split_line) > 1 else None
 
-        #if operand.startswith('"') or operand.startswith("'"):
-        #    text_start, text_end = ind,
+    if cmnd in COMMANDS:
+        returned_from_command = COMMANDS[cmnd](other)
+        return returned_from_command
+
+    elif cmnd.startswith('"') or cmnd.startswith("'"):
+        text_start_sym = "'" if cmnd.startswith("'") else '"'
+        text = ""
+
+        for sym in line[1:]:
+            if sym != text_start_sym:
+                text += sym
+            else:
+                return text
+    else:
+        raise SyntaxException('No command is recognized')
 
 
 if file_extension != '.prt':
